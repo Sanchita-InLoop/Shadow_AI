@@ -1,6 +1,6 @@
-# 🌑 Shadow AI — Deadline Crisis Management Agent
+# 🌑 Shadow AI - Deadline Crisis Management Agent
 
-> *Your AI sidekick that turns deadline panic into an actionable rescue plan — in seconds.*
+> *Your AI sidekick that turns deadline panic into an actionable rescue plan - in seconds.*
 
 ![Shadow AI](https://img.shields.io/badge/Built%20with-Gemini%20API-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -11,7 +11,7 @@
 
 ## 🚨 Problem Statement
 
-When a deadline is hours away, people don't need a to-do list — they need a **rescue plan**.
+When a deadline is hours away, people don't need a to-do list - they need a **rescue plan**.
 
 Traditional task managers are built for calm planning. They fail in the chaos of a real deadline crisis: they can't prioritize under pressure, they can't calculate what's actually achievable, and they can't adapt when time collapses.
 
@@ -21,7 +21,7 @@ Traditional task managers are built for calm planning. They fail in the chaos of
 
 ## 💡 Solution Overview
 
-Shadow AI is an **agentic deadline crisis manager**. You tell it your task and deadline — it acts like a real AI sidekick that:
+Shadow AI is an **agentic deadline crisis manager**. You tell it your task and deadline - it acts like a real AI sidekick that:
 
 1. **Calculates urgency & panic levels** based on time remaining vs. task complexity
 2. **Autonomously breaks down your work** into timed, prioritized execution blocks
@@ -29,7 +29,7 @@ Shadow AI is an **agentic deadline crisis manager**. You tell it your task and d
 4. **Lets you extend deadlines** with one click and recalculates everything in real time
 5. **Provides an inline editing UI** so you can adapt your plan as the situation changes
 
-The AI doesn't just chat — it **acts**: planning, calculating, and structuring your remaining time into a step-by-step survival timeline.
+The AI doesn't just chat - it **acts**: planning, calculating, and structuring your remaining time into a step-by-step survival timeline.
 
 ---
 
@@ -49,12 +49,12 @@ The AI doesn't just chat — it **acts**: planning, calculating, and structuring
 ## 🛠️ Technologies Used
 
 ### Frontend
-- **React** + **Vite** — fast, modern UI framework
-- **CSS** — custom dark productivity theme
+- **React** + **Vite** - fast, modern UI framework
+- **CSS** - custom dark productivity theme
 
 ### Backend
-- **Node.js** + **Express.js** — REST API server
-- **Google Gemini API** — core AI model for agentic task planning and breakdown
+- **Node.js** + **Express.js** - REST API server
+- **Google Gemini API** - core AI model for agentic task planning and breakdown
 - Threshold-based **urgency/panic calculation engine** (server-side)
 - **CORS** configured for secure cross-origin requests
 
@@ -153,7 +153,7 @@ Shadow_AI/
 
 ## 👤 Author
 
-**Sanchita** — [@Sanchita-InLoop](https://github.com/Sanchita-InLoop)
+**Sanchita** - [@Sanchita-InLoop](https://github.com/Sanchita-InLoop)
 
 Built for **Vibe2Ship Hackathon 2026** 🚀
 
@@ -161,4 +161,4 @@ Built for **Vibe2Ship Hackathon 2026** 🚀
 
 ## 📄 License
 
-MIT License — feel free to build on this.
+MIT License - feel free to build on this.
