@@ -140,7 +140,7 @@ function App() {
   };
 
   return (
-    <div style={{ padding: '30px', fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto', color: '#e0e0e0', minHeight: '100vh', backgroundColor: '#121212', boxSizing: 'border-box' }}>
+    <div className="shadow-ai-app" style={{ padding: '30px', fontFamily: 'system-ui, sans-serif', maxWidth: '1200px', margin: '0 auto', color: '#e0e0e0', minHeight: '100vh', backgroundColor: '#121212', boxSizing: 'border-box' }}>
 
       {/* ── Panic banner ── */}
       {isPanic && (
@@ -152,12 +152,12 @@ function App() {
         </div>
       )}
 
-      <header style={{ borderBottom: '1px solid #222', paddingBottom: '15px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <header className="shadow-ai-header" style={{ borderBottom: '1px solid #222', paddingBottom: '15px', marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <h1 style={{ color: isPanic ? '#ff4757' : '#ff6b81', margin: 0, fontSize: '24px', letterSpacing: '0.5px' }}>🚨 SHADOW AI</h1>
           <p style={{ color: '#777', margin: '5px 0 0 0', fontSize: '13px' }}>Proactive Context-Aware Execution Matrix</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div className="shadow-ai-header-badges" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           {localUrgency && deadlines.length > 0 && (
             <span style={{ fontSize: '12px', color: localUrgency.color, border: `1px solid ${localUrgency.color}`, padding: '4px 10px', borderRadius: '4px', fontWeight: 'bold' }}>
               {localUrgency.label}
@@ -167,13 +167,13 @@ function App() {
         </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '30px', alignItems: 'start' }}>
+      <div className="shadow-ai-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '30px', alignItems: 'start' }}>
 
         {/* ── LEFT: Deadline Tracker ── */}
         <section style={card}>
           <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#fff' }}>📅 Upcoming Milestones Matrix</h3>
 
-          <form onSubmit={addDeadline} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px', marginBottom: '15px' }}>
+          <form onSubmit={addDeadline} className="shadow-ai-form" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px', marginBottom: '15px' }}>
             <input type="text" placeholder="Task name..." value={newTask} onChange={e => setNewTask(e.target.value)} style={inp} required />
             <input type="datetime-local" value={newDate} onChange={e => setNewDate(e.target.value)} style={inp} required />
             <textarea placeholder="Optional context: What's left to do? Yap away..." value={newDescription} onChange={e => setNewDescription(e.target.value)} rows={2} style={{ ...inp, gridColumn: 'span 2', resize: 'none' }} />
@@ -202,7 +202,7 @@ function App() {
                   <div key={d.id} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '6px', borderLeft: '4px solid #5352ed', overflow: 'hidden', padding: '14px 16px', gap: '10px' }}>
                     <div style={{ fontSize: '11px', color: '#5352ed', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✏️ Editing Task</div>
                     <input type="text" placeholder="Task name..." value={editForm.task} onChange={e => setEditForm(f => ({ ...f, task: e.target.value }))} style={inp} />
-                    <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '10px' }}>
+                    <div className="shadow-ai-edit-row" style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '10px' }}>
                       <input type="datetime-local" value={editForm.deadline} onChange={e => setEditForm(f => ({ ...f, deadline: e.target.value }))} style={inp} />
                       <select value={editForm.importance} onChange={e => setEditForm(f => ({ ...f, importance: e.target.value }))} style={inp}>
                         {Object.entries(IMPORTANCE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
@@ -225,8 +225,8 @@ function App() {
 
               return (
                 <div key={d.id} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '6px', borderLeft: `4px solid ${IMPORTANCE_COLOR[d.importance]}`, overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
-                    <div style={{ maxWidth: '76%' }}>
+                  <div className="shadow-ai-task-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
+                    <div className="shadow-ai-task-info" style={{ maxWidth: '76%' }}>
                       <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '14px', wordBreak: 'break-word' }}>{d.task}</div>
                       <div style={{ fontSize: '11px', color: '#aaa', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span>⏰ {new Date(d.deadline).toLocaleString()}</span>
@@ -315,7 +315,7 @@ function App() {
 
                     return (
                       <div key={step.stepNumber} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '6px', overflow: 'hidden', borderLeft: `2px solid ${accentColor}` }}>
-                        <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
+                        <div className="shadow-ai-step-row" style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '10px' }}>
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', flexWrap: 'wrap' }}>
                               <span style={{ fontSize: '10px', background: 'rgba(255,255,255,0.05)', color: '#888', padding: '2px 6px', borderRadius: '3px', textTransform: 'uppercase', fontWeight: 'bold', letterSpacing: '0.3px' }}>
@@ -354,6 +354,42 @@ function App() {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50%       { opacity: 0.85; }
+        }
+
+        /* ── Responsive overrides ──────────────────────────────────────── */
+        @media (max-width: 768px) {
+          .shadow-ai-app {
+            padding: 16px !important;
+          }
+          .shadow-ai-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px;
+          }
+          .shadow-ai-header-badges {
+            flex-wrap: wrap;
+          }
+          .shadow-ai-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .shadow-ai-form {
+            grid-template-columns: 1fr !important;
+          }
+          .shadow-ai-form textarea {
+            grid-column: span 1 !important;
+          }
+          .shadow-ai-edit-row {
+            grid-template-columns: 1fr !important;
+          }
+          .shadow-ai-task-row {
+            flex-wrap: wrap;
+          }
+          .shadow-ai-task-info {
+            max-width: 100% !important;
+          }
+          .shadow-ai-step-row {
+            flex-wrap: wrap;
+          }
         }
       `}</style>
     </div>
