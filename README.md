@@ -1,6 +1,6 @@
-# 🌑 Shadow AI - Deadline Crisis Management Agent
+# 🌑 Shadow AI — The Last-Minute Life Saver
 
-> *Your AI sidekick that turns deadline panic into an actionable rescue plan - in seconds.*
+> *Your AI sidekick that turns deadline panic into an actionable rescue plan — in seconds.*
 
 ![Shadow AI](https://img.shields.io/badge/Built%20with-Gemini%20API-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![React](https://img.shields.io/badge/Frontend-React%20%2B%20Vite-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -11,25 +11,23 @@
 
 ## 🚨 Problem Statement
 
-When a deadline is hours away, people don't need a to-do list - they need a **rescue plan**.
+**Official challenge:** *The Last-Minute Life Saver* — students, professionals, and entrepreneurs frequently miss deadlines, assignments, meetings, and important commitments. Existing productivity tools rely on passive reminders that are easy to ignore and do little to help users actually complete their tasks. The challenge: build an AI-powered productivity companion that proactively assists users in planning, prioritizing, and completing tasks — moving beyond reminders to help users take meaningful action.
 
-Traditional task managers are built for calm planning. They fail in the chaos of a real deadline crisis: they can't prioritize under pressure, they can't calculate what's actually achievable, and they can't adapt when time collapses.
-
-**Shadow AI** solves exactly this.
+A calendar notification doesn't tell you what to physically do in the next 20 minutes when three deadlines are colliding. **Shadow AI does.**
 
 ---
 
 ## 💡 Solution Overview
 
-Shadow AI is an **agentic deadline crisis manager**. You tell it your task and deadline - it acts like a real AI sidekick that:
+Shadow AI is an **agentic deadline-rescue companion**, not a to-do list with notifications bolted on. You feed it your active deadlines — it acts like a sidekick that:
 
-1. **Calculates urgency & panic levels** based on time remaining vs. task complexity
-2. **Autonomously breaks down your work** into timed, prioritized execution blocks
-3. **Sorts and ranks tasks** by urgency score so you always know what to do next
-4. **Lets you extend deadlines** with one click and recalculates everything in real time
-5. **Provides an inline editing UI** so you can adapt your plan as the situation changes
+1. **Re-evaluates true urgency server-side** for every tracked task — never trusting client-side sort order, and always checking for overdue items first
+2. **Calculates a live urgency rating and Panic Mode trigger** based on time-remaining thresholds and stated priority
+3. **Autonomously plans a time-budgeted execution sequence** — the backend computes how much work time is actually realistic given what's left (a task due in 3 days doesn't get allocated 70% of those 3 days) *before* ever asking the AI to generate steps
+4. **Calls the Gemini API** to generate exactly 3 concrete, sequenced micro-tasks per deadline, with a tactical tip and a duration for each
+5. **Clamps the AI's output server-side** as a safety net — if the model ignores the time budget, durations are proportionally rescaled rather than trusted blindly
 
-The AI doesn't just chat - it **acts**: planning, calculating, and structuring your remaining time into a step-by-step survival timeline.
+This directly answers the "move beyond passive reminders" brief: the agent doesn't remind you a deadline exists, it decides what action to take right now and how long that action should realistically take.
 
 ---
 
@@ -37,25 +35,26 @@ The AI doesn't just chat - it **acts**: planning, calculating, and structuring y
 
 | Feature | Description |
 |--------|-------------|
-| ⚡ **Instant Rescue Plan** | Input a task + deadline → get a full execution breakdown in seconds |
-| 🔥 **Urgency & Panic Scoring** | Threshold-based scoring engine calculates how critical each task is |
-| 📋 **Agentic Task Breakdown** | AI autonomously generates subtasks with time estimates |
-| 🔢 **Priority Sorting** | Backend sorts all tasks by urgency score automatically |
-| ✏️ **Inline Deadline Editing** | Edit deadlines directly in the UI with quick +1hr, +1day shortcuts |
-| 🌑 **Dark Productivity UI** | Clean, focused dark interface built for high-stress work sessions |
+| ⚡ **Instant Rescue Plan** | Track a deadline → run optimization → get a concrete, time-boxed action plan in seconds |
+| 🔥 **Urgency & Panic Scoring** | Threshold-based engine classifies every situation from 🟢 Manageable to 🔴 Overdue, and flips on Panic Mode automatically |
+| 🤖 **Agentic, Time-Budgeted Task Breakdown** | The AI doesn't just list subtasks — it works within a server-calculated realistic time ceiling, so plans don't pretend a person has more free time than they do |
+| 🔢 **Cross-Task Priority Sorting** | All tracked deadlines are re-sorted by true urgency server-side, every single run |
+| ✏️ **Inline Deadline Editing** | Edit task name, deadline, priority, or context notes directly in the UI; any stale AI plan is automatically cleared so it can't go out of sync |
+| 📱 **Responsive Dark UI** | Built for high-stress work sessions, usable on both desktop and mobile |
+| 🛡️ **Graceful Failure Handling** | Rate-limit detection with parsed wait times, and clear error messaging if the backend is unreachable |
 
 ---
 
 ## 🛠️ Technologies Used
 
 ### Frontend
-- **React** + **Vite** - fast, modern UI framework
-- **CSS** - custom dark productivity theme
+- **React** + **Vite** — fast, modern UI framework
+- **CSS-in-JS** with responsive media queries — custom dark productivity theme
 
 ### Backend
-- **Node.js** + **Express.js** - REST API server
-- **Google Gemini API** - core AI model for agentic task planning and breakdown
-- Threshold-based **urgency/panic calculation engine** (server-side)
+- **Node.js** + **Express 5** — REST API server
+- **Google Gemini API** (`gemini-2.5-flash`) — core AI model for agentic task planning, using structured JSON schema output for reliable parsing
+- Threshold-based **urgency/panic calculation engine** (server-side, runs before any AI call to save quota)
 - **CORS** configured for secure cross-origin requests
 
 ---
@@ -64,9 +63,9 @@ The AI doesn't just chat - it **acts**: planning, calculating, and structuring y
 
 | Technology | How It's Used |
 |-----------|---------------|
-| **Gemini API (gemini-1.5-flash)** | Powers the AI agent that generates rescue plans and breaks down tasks |
-| **Google AI Studio** | Used for prototyping prompts and testing the agentic pipeline |
-| **Google Cloud Run** | Deployed the backend as a containerized service via Cloud Run |
+| **Gemini API (`gemini-2.5-flash`)** | Powers the agent that generates time-budgeted rescue plans via the official `@google/genai` SDK, with `responseSchema`-constrained structured output |
+| **Google AI Studio** | Used to generate and manage the Gemini API key |
+| **Google Cloud Run** | Backend deployed as a containerized service ([live URL](#) — *add once deployed*) |
 
 ---
 
@@ -77,22 +76,31 @@ User
  │
  ▼
 React + Vite Frontend
- │  (Task input, deadline, urgency display)
+ │  (Track deadlines, view live countdowns, trigger optimization)
  │
  ▼
-Express.js Backend (Node.js)
- │  ├── Urgency & Panic Score Calculator
- │  ├── Task Sorter (by urgency)
- │  └── Gemini API Integration
+Express Backend (Node.js)
+ │  ├── Urgency & Panic Score Calculator (local, no API call)
+ │  ├── Cross-Task Urgency Sorter
+ │  ├── Time-Budget Calculator (per task, before AI call)
+ │  ├── Gemini API Integration (structured output)
+ │  └── Server-Side Duration Safety Net (clamps AI output to budget)
         │
         ▼
-   Gemini 1.5 Flash
-   (Agentic task planning & breakdown)
+   Gemini 2.5 Flash
+   (Generates 3 sequenced micro-tasks per deadline)
 ```
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Live Links
+
+- **Frontend (Vercel):** https://shadow-ai-eight.vercel.app
+- **Backend (Google Cloud Run):** *[add link here]*
+
+---
+
+## 📦 Getting Started
 
 ### Prerequisites
 - Node.js v18+
@@ -113,12 +121,14 @@ npm install
 Create a `.env` file inside `/Backend`:
 ```
 GEMINI_API_KEY=your_api_key_here
-PORT=3000
+PORT=5050
 ```
 
 Start the backend:
 ```bash
-node index.js
+npm start
+# or for auto-restart on file changes:
+npm run dev
 ```
 
 ### Set up the Frontend
@@ -128,7 +138,7 @@ npm install
 npm run dev
 ```
 
-Visit `http://localhost:5173` in your browser.
+Visit `http://localhost:5173` in your browser. In local development, API calls are proxied to the backend via `vite.config.js`; in production, the frontend reads the backend URL from the `VITE_API_URL` environment variable.
 
 ---
 
@@ -137,12 +147,13 @@ Visit `http://localhost:5173` in your browser.
 ```
 Shadow_AI/
 ├── Backend/
-│   ├── index.js          # Express server + Gemini API integration
+│   ├── server.js          # Express server + urgency engine + Gemini API integration
+│   ├── Dockerfile         # Cloud Run container build
 │   ├── package.json
-│   └── .env              # (not committed — add your own)
+│   └── .env               # (not committed — add your own)
 ├── Frontend/
 │   ├── src/
-│   │   ├── App.jsx       # Main app component
+│   │   ├── App.jsx        # Main app component
 │   │   └── ...
 │   ├── package.json
 │   └── vite.config.js
@@ -151,9 +162,20 @@ Shadow_AI/
 
 ---
 
+## 🧠 How the Agent Decides What's Urgent
+
+Urgency isn't just "closest deadline wins." The engine weighs:
+- Whether any task is already **overdue** (always takes absolute priority)
+- **Hours remaining** until the nearest deadline, against fixed thresholds (6h / 12h / 24h / 48h)
+- **Stated priority** (High / Medium / Low) for tasks more than 24 hours out
+
+That urgency rating then shapes the time budget given to the AI for generating each task's steps — so a 3-day-out task gets short, sustainable work sessions, not a plan that assumes someone has nothing else to do with their next 72 hours.
+
+---
+
 ## 👤 Author
 
-**Sanchita** - [@Sanchita-InLoop](https://github.com/Sanchita-InLoop)
+**Sanchita** — [@Sanchita-InLoop](https://github.com/Sanchita-InLoop)
 
 Built for **Vibe2Ship Hackathon 2026** 🚀
 
@@ -161,4 +183,4 @@ Built for **Vibe2Ship Hackathon 2026** 🚀
 
 ## 📄 License
 
-MIT License - feel free to build on this.
+MIT License — feel free to build on this.
