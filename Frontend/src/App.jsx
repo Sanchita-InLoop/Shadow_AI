@@ -147,7 +147,9 @@ function App() {
         <div style={{ background: 'linear-gradient(90deg, #ff4757, #c0392b)', padding: '10px 20px', borderRadius: '6px', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px', animation: 'pulse 1.5s infinite' }}>
           <span style={{ fontSize: '20px' }}>🚨</span>
           <span style={{ fontWeight: 'bold', fontSize: '14px', color: '#fff', letterSpacing: '0.5px' }}>
-            PANIC MODE ACTIVE — You have deadlines within 24 hours. Execute immediately.
+            PANIC MODE ACTIVE — {localUrgency?.label?.includes('OVERDUE')
+              ? 'You have an overdue deadline. Execute immediately.'
+              : 'You have a deadline closing in fast. Execute immediately.'}
           </span>
         </div>
       )}
@@ -185,7 +187,7 @@ function App() {
 
           <button type="button" onClick={triggerGlobalAIPlan} disabled={!deadlines.length || loading}
             style={{ width: '100%', padding: '12px', background: (!deadlines.length || loading) ? '#222' : isPanic ? '#ff4757' : '#2ed573', color: (!deadlines.length || loading) ? '#555' : '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: (!deadlines.length || loading) ? 'not-allowed' : 'pointer', fontSize: '13px', marginBottom: '20px', letterSpacing: '0.3px' }}>
-            {isPanic ? '🚨' : '⚡'} Run AI Panic Optimization ({deadlines.length} Nodes Loaded)
+            {isPanic ? '🚨' : '⚡'} Run AI Panic Optimization {deadlines.length > 0 ? `(${deadlines.length} task${deadlines.length > 1 ? 's' : ''} tracked)` : ''}
           </button>
 
           {/* Task list — sorted visually by urgency */}
@@ -262,7 +264,7 @@ function App() {
 
           {loading && (
             <div style={{ textAlign: 'center', padding: '40px 0', color: '#5352ed', fontWeight: 'bold', fontSize: '14px' }}>
-              🧠 Generating {deadlines.length * 3} micro-tasks across {deadlines.length} tasks...
+              🧠 Generating your action plan across {deadlines.length} task{deadlines.length > 1 ? 's' : ''}...
               <div style={{ fontSize: '11px', color: '#555', marginTop: '8px', fontWeight: 'normal' }}>Processing sequentially to preserve API quota</div>
             </div>
           )}
