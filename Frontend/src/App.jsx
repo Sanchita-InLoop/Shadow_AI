@@ -37,9 +37,33 @@ function App() {
   const [loading,        setLoading]        = useState(false);
   const [activePlan,     setActivePlan]     = useState(null);
   const [errorMsg,       setErrorMsg]       = useState('');
+  const [editingId,      setEditingId]      = useState(null);
+  const [editForm,       setEditForm]       = useState({ task: '', deadline: '', importance: 'High', description: '' });
 
   const toggleTask = (id) => setExpandedTasks(prev => ({ ...prev, [id]: !prev[id] }));
   const toggleStep = (n)  => setExpandedSteps(prev => ({ ...prev, [n]:  !prev[n]  }));
+
+  const startEdit = (d) => {
+    setEditingId(d.id);
+    setEditForm({ task: d.task, deadline: d.deadline, importance: d.importance, description: d.description || '' });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditForm({ task: '', deadline: '', importance: 'High', description: '' });
+  };
+
+  const saveEdit = (id) => {
+    if (!editForm.task.trim() || !editForm.deadline) return;
+    setDeadlines(prev => prev.map(d => d.id === id
+      ? { ...d, task: editForm.task.trim(), deadline: editForm.deadline, importance: editForm.importance, description: editForm.description.trim() }
+      : d
+    ));
+    // Task name or deadline may have changed — any prior AI plan referencing
+    // the old values is now stale, so clear it to avoid confusing mismatches.
+    setActivePlan(null);
+    cancelEdit();
+  };
 
   const addDeadline = (e) => {
     e.preventDefault();
@@ -55,6 +79,7 @@ function App() {
     setDeadlines(prev => prev.filter(d => d.id !== id));
     setExpandedTasks(prev => { const n = { ...prev }; delete n[id]; return n; });
     setActivePlan(null);
+    if (editingId === id) cancelEdit();
   };
 
   const triggerGlobalAIPlan = async () => {
@@ -169,10 +194,38 @@ function App() {
             )}
             {[...deadlines].sort((a, b) => new Date(a.deadline) - new Date(b.deadline)).map(d => {
               const timeLabel = getTimeLabel(d.deadline);
+              const isEditing = editingId === d.id;
+
+              if (isEditing) {
+                return (
+                  <div key={d.id} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '6px', borderLeft: '4px solid #5352ed', overflow: 'hidden', padding: '14px 16px', gap: '10px' }}>
+                    <div style={{ fontSize: '11px', color: '#5352ed', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✏️ Editing Task</div>
+                    <input type="text" placeholder="Task name..." value={editForm.task} onChange={e => setEditForm(f => ({ ...f, task: e.target.value }))} style={inp} />
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '10px' }}>
+                      <input type="datetime-local" value={editForm.deadline} onChange={e => setEditForm(f => ({ ...f, deadline: e.target.value }))} style={inp} />
+                      <select value={editForm.importance} onChange={e => setEditForm(f => ({ ...f, importance: e.target.value }))} style={inp}>
+                        {Object.entries(IMPORTANCE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                      </select>
+                    </div>
+                    <textarea placeholder="Optional context..." value={editForm.description} onChange={e => setEditForm(f => ({ ...f, description: e.target.value }))} rows={2} style={{ ...inp, resize: 'none' }} />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button type="button" onClick={() => saveEdit(d.id)} disabled={!editForm.task.trim() || !editForm.deadline}
+                        style={{ flex: 1, padding: '8px', background: (!editForm.task.trim() || !editForm.deadline) ? '#222' : '#2ed573', color: (!editForm.task.trim() || !editForm.deadline) ? '#555' : '#fff', border: 'none', borderRadius: '4px', fontWeight: 'bold', cursor: (!editForm.task.trim() || !editForm.deadline) ? 'not-allowed' : 'pointer', fontSize: '12px' }}>
+                        ✓ Save Changes
+                      </button>
+                      <button type="button" onClick={cancelEdit}
+                        style={{ flex: 1, padding: '8px', background: '#333', color: '#ccc', border: '1px solid #444', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
+                        ✕ Cancel
+                      </button>
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div key={d.id} style={{ display: 'flex', flexDirection: 'column', background: '#222', borderRadius: '6px', borderLeft: `4px solid ${IMPORTANCE_COLOR[d.importance]}`, overflow: 'hidden' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 16px' }}>
-                    <div style={{ maxWidth: '80%' }}>
+                    <div style={{ maxWidth: '76%' }}>
                       <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '14px', wordBreak: 'break-word' }}>{d.task}</div>
                       <div style={{ fontSize: '11px', color: '#aaa', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         <span>⏰ {new Date(d.deadline).toLocaleString()}</span>
@@ -185,7 +238,10 @@ function App() {
                         )}
                       </div>
                     </div>
-                    <button onClick={() => removeDeadline(d.id)} style={{ background: 'transparent', color: '#ff4757', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '0 4px', flexShrink: 0 }}>✕</button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+                      <button onClick={() => startEdit(d)} title="Edit / extend deadline" style={{ background: 'transparent', color: '#5352ed', border: 'none', cursor: 'pointer', fontSize: '15px', padding: '0 4px' }}>✎</button>
+                      <button onClick={() => removeDeadline(d.id)} title="Delete" style={{ background: 'transparent', color: '#ff4757', border: 'none', cursor: 'pointer', fontSize: '16px', padding: '0 4px' }}>✕</button>
+                    </div>
                   </div>
                   {d.description && expandedTasks[d.id] && (
                     <div style={{ background: '#1c1c1c', borderTop: '1px solid #2d2d2d', padding: '12px 16px', fontSize: '12px', color: '#b0b0b0', lineHeight: '1.5' }}>

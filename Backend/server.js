@@ -103,14 +103,32 @@ async function generateMicroTasksForOne(task, stepOffset) {
   const now       = Date.now();
   const gapMs     = new Date(task.deadline).getTime() - now;
   const hoursLeft = Math.max(0, Math.round(gapMs / (60 * 60 * 1000)));
+  const minutesLeft = Math.max(0, Math.round(gapMs / 60000));
   const isOverdue = gapMs < 0;
+
+  // ── Time-budget ceiling ──────────────────────────────────────────────────
+  // Steps must never collectively exceed the time actually remaining, and in
+  // practice should leave realistic headroom for sleep, meals, commute, other
+  // obligations etc. We cap the *suggested* work budget well under 100% of
+  // remaining time, scaling more conservatively the more time is available.
+  let budgetFraction;
+  if (isOverdue || hoursLeft < 3)       budgetFraction = 0.9;  // true emergency: almost all time is fair game
+  else if (hoursLeft < 12)              budgetFraction = 0.6;  // still need sleep/breaks
+  else if (hoursLeft < 24)              budgetFraction = 0.35; // a day has school/work/life in it
+  else if (hoursLeft < 72)              budgetFraction = 0.20; // multi-day — work happens in short daily sessions
+  else                                   budgetFraction = 0.10; // plenty of runway — don't front-load it
+
+  const maxTotalMinutes = isOverdue
+    ? 180 // overdue tasks get short, immediate-action steps, not hours of "planning"
+    : Math.max(20, Math.round(minutesLeft * budgetFraction));
+
   const urgencyCtx = isOverdue
-    ? 'THIS TASK IS OVERDUE. Steps must be immediate and recovery-focused.'
+    ? 'THIS TASK IS OVERDUE. Steps must be immediate and recovery-focused — minutes, not hours, per step.'
     : hoursLeft < 6
     ? `CRITICAL: only ${hoursLeft} hours left. Steps must be ultra-focused and fast.`
     : hoursLeft < 24
-    ? `URGENT: ${hoursLeft} hours remaining. Steps must be efficient and prioritized.`
-    : `${hoursLeft} hours remaining. Steps should be thorough but well-paced.`;
+    ? `URGENT: ${hoursLeft} hours remaining. Steps must be efficient and realistic — the person still needs to sleep, eat, and handle other obligations, so do not allocate anywhere close to the full ${hoursLeft}h to these 3 steps.`
+    : `${hoursLeft} hours (~${Math.round(hoursLeft/24)} days) remaining. Steps should be short, realistic work sessions — think 30-120 minutes each, NOT multi-hour blocks. The person has other commitments; these are just the next concrete actions, not the entire remaining timeline.`;
 
   const prompt = `You are Shadow AI's scheduling engine.
 
@@ -125,7 +143,9 @@ Generate EXACTLY 3 sequential micro-tasks for this specific task.
 - parentTaskName: must be exactly "${task.task.trim()}"
 - taskName: concrete action phrase, under 5 words
 - focusTip: specific tactical tip for THIS task, 15-25 words
-- durationMinutes: realistic time estimate given urgency context above
+- durationMinutes: realistic time estimate for a focused work session on just that step
+
+HARD CONSTRAINT: the sum of all 3 durationMinutes values MUST NOT exceed ${maxTotalMinutes} minutes total. These are short, focused sessions, not the person's entire remaining schedule — they still need time to sleep, eat, and live their life around this deadline. Individual steps should typically be 15-120 minutes; do not invent multi-hour steps to fill time.
 
 Return only valid JSON.`;
 
@@ -159,11 +179,27 @@ Return only valid JSON.`;
   });
 
   const parsed = JSON.parse(response.text);
-  return (parsed.microTasks ?? []).slice(0, 3).map((t, i) => ({
+  let microTasks = (parsed.microTasks ?? []).slice(0, 3).map((t, i) => ({
     ...t,
     stepNumber:     stepOffset + i + 1,
     parentTaskName: task.task.trim(), // Always override — never trust model's string
+    durationMinutes: Math.max(5, Math.round(Number(t.durationMinutes) || 30)), // sanitize
   }));
+
+  // ── Server-side safety net ──────────────────────────────────────────────
+  // The model can still ignore the prompt constraint, so clamp the total here
+  // too. If steps blow the budget, scale every step down proportionally
+  // (preserving relative weighting between steps) rather than discarding data.
+  const total = microTasks.reduce((sum, t) => sum + t.durationMinutes, 0);
+  if (total > maxTotalMinutes && total > 0) {
+    const scale = maxTotalMinutes / total;
+    microTasks = microTasks.map(t => ({
+      ...t,
+      durationMinutes: Math.max(5, Math.round(t.durationMinutes * scale)),
+    }));
+  }
+
+  return microTasks;
 }
 
 // ─── Main route ───────────────────────────────────────────────────────────────
@@ -200,8 +236,9 @@ app.post('/api/rescue', async (req, res) => {
       console.log(`⚙️  [${i+1}/${sortedTasks.length}] Generating for: "${task.task}"`);
 
       const microTasks = await generateMicroTasksForOne(task, i * 3);
+      const stepTotal = microTasks.reduce((s, t) => s + t.durationMinutes, 0);
+      console.log(`  ✅ ${microTasks.length} steps generated (${stepTotal}m total)`);
       allMicroTasks.push(...microTasks);
-      console.log(`  ✅ ${microTasks.length} steps generated`);
 
       if (i < sortedTasks.length - 1) await sleep(500);
     }
