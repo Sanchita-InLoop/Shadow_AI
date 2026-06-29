@@ -4,6 +4,52 @@ const IMPORTANCE_WEIGHT = { High: 3, Medium: 2, Low: 1 };
 const IMPORTANCE_COLOR  = { High: '#ff4757', Medium: '#ffa500', Low: '#2ed573' };
 const IMPORTANCE_LABEL  = { High: '🔴 High', Medium: '🟡 Medium', Low: '🟢 Low' };
 
+// ── Example task set for evaluators / quick testing ───────────────────────────
+// Deadlines are computed relative to "now" so they stay meaningful no matter
+// when this is loaded, rather than hardcoding stale dates.
+function buildExampleDeadlines() {
+  const now = Date.now();
+  const HOUR = 3600000;
+  const toLocalInput = (ms) => {
+    const d = new Date(ms);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
+  return [
+    {
+      id: now + 1, task: 'Buy groceries',
+      deadline: toLocalInput(now + 48 * HOUR),
+      importance: 'Medium', description: '',
+    },
+    {
+      id: now + 2, task: 'Pay electricity bill',
+      deadline: toLocalInput(now + 24 * HOUR),
+      importance: 'High', description: '',
+    },
+    {
+      id: now + 3, task: 'Reply to internship offer email',
+      deadline: toLocalInput(now + 6 * HOUR),
+      importance: 'High', description: 'Need to confirm start date and ask about remote work policy.',
+    },
+    {
+      id: now + 4, task: 'Prepare for client meeting',
+      deadline: toLocalInput(now + 32 * HOUR),
+      importance: 'High', description: 'First meeting with a new client — need to review their company background.',
+    },
+    {
+      id: now + 5, task: 'Study for chemistry final',
+      deadline: toLocalInput(now + 72 * HOUR),
+      importance: 'High', description: 'Covers chapters 4-9, weakest on organic reactions.',
+    },
+    {
+      id: now + 6, task: 'Finish history essay draft',
+      deadline: toLocalInput(now - 2 * HOUR), // intentionally overdue
+      importance: 'High', description: '1500 words required, currently at 600 words.',
+    },
+  ];
+}
+
 // ── Local urgency preview shown before running AI ─────────────────────────────
 function getLocalUrgency(deadlines) {
   if (!deadlines.length) return null;
@@ -80,6 +126,14 @@ function App() {
     setExpandedTasks(prev => { const n = { ...prev }; delete n[id]; return n; });
     setActivePlan(null);
     if (editingId === id) cancelEdit();
+  };
+
+  const loadExampleTasks = () => {
+    setDeadlines(buildExampleDeadlines());
+    setActivePlan(null);
+    setErrorMsg('');
+    setExpandedTasks({});
+    setExpandedSteps({});
   };
 
   const triggerGlobalAIPlan = async () => {
@@ -174,6 +228,13 @@ function App() {
         {/* ── LEFT: Deadline Tracker ── */}
         <section style={card}>
           <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#fff' }}>📅 Upcoming Milestones Matrix</h3>
+
+          {deadlines.length === 0 && (
+            <button type="button" onClick={loadExampleTasks}
+              style={{ width: '100%', padding: '10px', marginBottom: '15px', background: 'transparent', color: '#5352ed', border: '1px dashed #5352ed', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontSize: '12px' }}>
+              ✨ Load Example Tasks (for testing / evaluators)
+            </button>
+          )}
 
           <form onSubmit={addDeadline} className="shadow-ai-form" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '10px', marginBottom: '15px' }}>
             <input type="text" placeholder="Task name..." value={newTask} onChange={e => setNewTask(e.target.value)} style={inp} required />
