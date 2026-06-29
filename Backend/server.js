@@ -138,10 +138,15 @@ Priority: ${task.importance}
 Time context: ${urgencyCtx}
 ${task.description ? `Context: ${task.description.trim()}` : ''}
 
-Decide how many concrete sequential steps this SPECIFIC task actually needs — between 1 and 3. Do not pad with filler steps just to reach 3.
-- Use 1 step if the task is a single quick action (e.g. "send an email", "pay a bill", "book an appointment", "reply to a message")
-- Use 2 steps if the task naturally splits into a clear "prepare, then do" or "draft, then send" structure
-- Use 3 steps only if the task genuinely has 3 distinct phases of meaningful work (e.g. studying for an exam, writing an essay, building a project)
+Decide how many concrete sequential steps this SPECIFIC task actually needs — between 1 and 3. Most tasks should get 1 or 2 steps. Only use 3 if the task genuinely has 3 distinct, substantial phases of work. Do not pad with filler steps just to look thorough.
+
+Calibrate durations to the REAL effort involved, not to fill time:
+- Trivial logistics (buy groceries, pay a bill, book an appointment, send a quick email, schedule a meeting) → 1 step, 5-15 minutes. These are errands, not work sessions.
+- Light prep or short conversations (attend a meeting, make a phone call, reply to a detailed email) → 1 step, 10-20 minutes.
+- Real focused work with some depth (write a section, review material, prepare short notes) → 1-2 steps, 20-45 minutes each.
+- Substantial work needing multiple genuine phases (study for an exam, write an essay, build a project, prepare a full presentation) → 2-3 steps, 30-90 minutes each.
+
+Ask yourself: "would a competent person actually need this much time and this many steps for this task?" If the honest answer is "no, this is quick," give it 1 step and a short duration — even if there's plenty of time before the deadline. Having time available is not a reason to inflate the plan.
 
 For each step generated:
 - parentTaskName: must be exactly "${task.task.trim()}"
@@ -149,7 +154,7 @@ For each step generated:
 - focusTip: specific tactical tip for THIS step, 15-25 words
 - durationMinutes: realistic time estimate for a focused work session on just that step
 
-HARD CONSTRAINT: the sum of all durationMinutes values across every step you generate MUST NOT exceed ${maxTotalMinutes} minutes total. These are short, focused sessions, not the person's entire remaining schedule — they still need time to sleep, eat, and live their life around this deadline. Individual steps should typically be 15-120 minutes; do not invent steps or inflate durations to fill time.
+HARD CONSTRAINT: the sum of all durationMinutes values across every step you generate MUST NOT exceed ${maxTotalMinutes} minutes total. This is an upper ceiling, not a target to hit — most tasks should use far less than the ceiling. These are short, focused sessions, not the person's entire remaining schedule.
 
 Return only valid JSON.`;
 
